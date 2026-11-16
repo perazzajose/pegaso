@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es-UY">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ONG Pegaso Chuy · Adopciones responsables</title>
+<meta name="description" content="Adoptá un perro o gato rescatado en el Chuy. ONG Pegaso: protección, rescate y defensa de los animales.">
+<meta property="og:title" content="ONG Pegaso Chuy · Adoptá, no compres">
+<meta property="og:description" content="Perros y gatos rescatados buscan un hogar responsable en el Chuy y la zona.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="contenedor">
+    <a class="marca" href="#">
+      <span class="logo" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#f7c325"><circle cx="5.5" cy="9" r="2.2"/><circle cx="9.5" cy="5" r="2.2"/><circle cx="14.5" cy="5" r="2.2"/><circle cx="18.5" cy="9" r="2.2"/><path d="M12 10.5c-3.2 0-6 3.6-6 6.4 0 2 1.6 2.6 3 2.6 1.3 0 2-.7 3-.7s1.7.7 3 .7c1.4 0 3-.6 3-2.6 0-2.8-2.8-6.4-6-6.4z"/></svg>
+      </span>
+      <span data-org="nombre">ONG Pegaso Chuy</span>
+    </a>
+    <button class="menu-btn" aria-label="Abrir menú" onclick="document.querySelector('nav.menu').classList.toggle('abierto')">☰</button>
+    <nav class="menu" onclick="this.classList.remove('abierto')">
+      <a href="#adopciones">Adopciones</a>
+      <a href="#requisitos">Cómo adoptar</a>
+      <a href="#ayudar">Cómo ayudar</a>
+      <a href="#finales-felices">Finales felices</a>
+      <a class="btn btn-amarillo" href="#ayudar" style="padding:.55rem 1.1rem">Donar</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="contenedor">
+      <div>
+        <span class="etiqueta">🐾 Adoptá, no compres</span>
+        <h1>Cada vida merece <em>un hogar</em> para siempre.</h1>
+        <p data-org="descripcion">Rescatamos, curamos y buscamos hogares responsables para perros y gatos del Chuy y la zona.</p>
+        <div class="acciones">
+          <a class="btn btn-amarillo" href="#adopciones">Ver animales en adopción</a>
+          <a class="btn btn-borde" href="#ayudar">Quiero ayudar</a>
+        </div>
+        <div class="cifras">
+          <div><b id="nAdopcion">–</b><span>buscan hogar</span></div>
+          <div><b id="nAdoptados">–</b><span>ya adoptados</span></div>
+          <div><b>13 mil</b><span>nos siguen</span></div>
+        </div>
+      </div>
+      <div class="hero-fotos" id="heroFotos">
+        <div class="ph"></div><div class="ph"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="adopciones">
+    <div class="contenedor">
+      <div class="titulo-sec">
+        <h2>Buscan un hogar</h2>
+        <p>Tocá cualquier tarjeta para conocerlo y completar la solicitud de adopción.</p>
+      </div>
+      <div class="filtros" id="filtros">
+        <button class="chip on" data-f="todos">Todos</button>
+        <button class="chip" data-f="Perro">🐶 Perros</button>
+        <button class="chip" data-f="Gato">🐱 Gatos</button>
+        <button class="chip" data-f="Chico">Chicos</button>
+        <button class="chip" data-f="Grande">Grandes</button>
+      </div>
+      <div class="grilla" id="grilla"><div class="cargando">Cargando animales…</div></div>
+    </div>
+  </section>
+
+  <section id="requisitos" class="franja">
+    <div class="contenedor">
+      <div class="titulo-sec">
+        <h2>Adoptar es un compromiso</h2>
+        <p>Es mucho más que querer tener un animal: es asumir una responsabilidad para toda su vida.</p>
+      </div>
+      <div class="valores">
+        <div class="valor"><div class="ico">📝</div><h3>1. Completás la solicitud</h3><p>Nos contás sobre tu hogar, tu familia y si tenés otros animales.</p></div>
+        <div class="valor"><div class="ico">💬</div><h3>2. Te contactamos</h3><p>Un voluntario conversa con vos y, si corresponde, coordina una visita.</p></div>
+        <div class="valor"><div class="ico">🏡</div><h3>3. Adopción y seguimiento</h3><p>Firmamos el compromiso y hacemos seguimiento para asegurarnos de que todo vaya bien.</p></div>
+      </div>
+      <div class="aviso">🚫 En Pegaso no apoyamos la compra y venta de animales. Si comprás o vendés animales, no serás seleccionado para adoptar.</div>
+    </div>
+  </section>
+
+  <section id="ayudar">
+    <div class="contenedor">
+      <div class="titulo-sec">
+        <h2>Cómo podés ayudar</h2>
+        <p>Rescatar cuesta: veterinaria, alimento, traslados. Toda ayuda suma.</p>
+      </div>
+      <div class="ayudar">
+        <div class="ayuda"><div class="ico" style="font-size:1.8rem">💛</div><h3>Doná</h3><p>Colaborá con la colecta para veterinaria y alimento.</p><a class="btn btn-amarillo" id="linkColecta" href="#" target="_blank" rel="noopener">Ir a la colecta</a></div>
+        <div class="ayuda"><div class="ico" style="font-size:1.8rem">🏠</div><h3>Hogar de tránsito</h3><p>Recibí temporalmente a un animal mientras encuentra familia.</p><button class="btn btn-azul" data-ofrecer="Hogar de tránsito">Me ofrezco</button></div>
+        <div class="ayuda"><div class="ico" style="font-size:1.8rem">🙋</div><h3>Voluntariado</h3><p>Traslados, eventos, redes, rescates. Sumate al equipo.</p><button class="btn btn-azul" data-ofrecer="Voluntariado">Quiero sumarme</button></div>
+        <div class="ayuda"><div class="ico" style="font-size:1.8rem">🥣</div><h3>Alimento e insumos</h3><p>Ración, mantas, collares, medicamentos.</p><button class="btn btn-azul" data-ofrecer="Donación de alimento">Quiero donar</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="finales-felices" style="padding-top:0">
+    <div class="contenedor">
+      <div class="titulo-sec">
+        <h2>Finales felices</h2>
+        <p>Gracias a quienes abren las puertas de su casa.</p>
+      </div>
+      <div class="adoptados" id="adoptados"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="contenedor">
+    <div>
+      <h3 data-org="nombre">ONG Pegaso Chuy</h3>
+      <p data-org="lema">Protección, rescate y defensa de los animales</p>
+      <p style="margin-top:.6rem">📍 <span data-org="ciudad">Chuy, Rocha</span>, Uruguay</p>
+    </div>
+    <div>
+      <h3>Seguinos</h3>
+      <p><a id="linkFacebook" href="#" target="_blank" rel="noopener">Facebook</a></p>
+      <p id="pieWhatsapp"></p>
+    </div>
+    <div>
+      <h3>Voluntarios</h3>
+      <p><a href="admin.html">Ingresar al panel</a></p>
+    </div>
+    <div class="credito">Sitio donado por <a href="https://conectatumundo.net" target="_blank" rel="noopener">ConectaTuMundo</a> 💙</div>
+  </div>
+</footer>
+
+<!-- Modal reutilizable -->
+<div class="modal" id="modal" role="dialog" aria-modal="true">
+  <div class="caja"><button class="cerrar" aria-label="Cerrar" onclick="cerrarModal()">×</button><div id="modalCuerpo"></div></div>
+</div>
+
+<script>
+const sb = supabase.createClient(ORG.supabaseUrl, ORG.supabaseKey);
+let animales = [];
+let filtro = "todos";
+
+// Textos de la organización
+document.querySelectorAll("[data-org]").forEach(el => { const v = ORG[el.dataset.org]; if (v) el.textContent = v; });
+document.getElementById("linkColecta").href = ORG.colecta;
+document.getElementById("linkFacebook").href = ORG.facebook;
+if (ORG.whatsapp) document.getElementById("pieWhatsapp").innerHTML = `<a href="https://wa.me/${ORG.whatsapp}" target="_blank" rel="noopener">WhatsApp</a>`;
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const foto = a => (a.fotos && a.fotos[0]) || "";
+
+async function cargar() {
+  const { data, error } = await sb.from("animales").select("*").order("destacado", { ascending: false }).order("creado_en", { ascending: false });
+  if (error) { document.getElementById("grilla").innerHTML = `<div class="vacio">No pudimos cargar los animales. Probá de nuevo en un rato.</div>`; return; }
+  animales = data;
+  const disponibles = animales.filter(a => a.estado !== "Adoptado");
+  const adoptados = animales.filter(a => a.estado === "Adoptado");
+  document.getElementById("nAdopcion").textContent = animales.filter(a => a.estado === "En adopción").length;
+  document.getElementById("nAdoptados").textContent = adoptados.length;
+  const fotosHero = disponibles.filter(foto).slice(0, 2);
+  document.querySelectorAll("#heroFotos .ph").forEach((el, i) => { if (fotosHero[i]) el.style.backgroundImage = `url('${foto(fotosHero[i])}')`; });
+  document.getElementById("adoptados").innerHTML = adoptados.length
+    ? adoptados.map(a => `<div class="adoptado"><div class="foto" style="background-image:url('${esc(foto(a))}')"></div><b>${esc(a.nombre)}</b><div style="color:var(--gris);font-size:.9rem">¡Ya tiene familia!</div></div>`).join("")
+    : `<p style="color:var(--gris)">Pronto vas a ver acá las historias de adopción.</p>`;
+  pintar();
+}
+
+function pintar() {
+  const lista = animales.filter(a => a.estado !== "Adoptado").filter(a => filtro === "todos" || a.especie === filtro || a.tamano === filtro);
+  document.getElementById("grilla").innerHTML = lista.length ? lista.map(a => `
+    <article class="tarjeta" onclick="verAnimal('${a.id}')" tabindex="0" onkeydown="if(event.key==='Enter')verAnimal('${a.id}')">
+      <div class="foto" style="background-image:url('${esc(foto(a))}')"><span class="estado ${esc(a.estado.replace(/\s/g,''))}">${esc(a.estado)}</span></div>
+      <div class="info">
+        <h3>${esc(a.nombre)}</h3>
+        <div class="datos">${[a.especie, a.sexo, a.edad_aprox, a.tamano].filter(Boolean).map(d => `<span>${esc(d)}</span>`).join("")}</div>
+        <p>${esc((a.descripcion || "").slice(0, 90))}${(a.descripcion || "").length > 90 ? "…" : ""}</p>
+      </div>
+    </article>`).join("") : `<div class="vacio">No hay animales con ese filtro por ahora.</div>`;
+}
+
+document.getElementById("filtros").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c === b));
+  filtro = b.dataset.f; pintar();
+});
+
+function abrirModal(html) { document.getElementById("modalCuerpo").innerHTML = html; document.getElementById("modal").classList.add("abierto"); document.body.style.overflow = "hidden"; }
+function cerrarModal() { document.getElementById("modal").classList.remove("abierto"); document.body.style.overflow = ""; }
+document.getElementById("modal").addEventListener("click", e => { if (e.target.id === "modal") cerrarModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarModal(); });
+
+function verAnimal(id) {
+  const a = animales.find(x => x.id === id); if (!a) return;
+  abrirModal(`
+    <div class="detalle">
+      <div class="foto" style="background-image:url('${esc(foto(a))}')"></div>
+      <div class="txt">
+        <span class="estado ${esc(a.estado.replace(/\s/g,''))}" style="position:static;align-self:flex-start">${esc(a.estado)}</span>
+        <h2>${esc(a.nombre)}</h2>
+        <div class="datos">${[a.especie, a.sexo, a.edad_aprox, a.tamano].filter(Boolean).map(d => `<span>${esc(d)}</span>`).join("")}</div>
+        <p>${esc(a.descripcion)}</p>
+        <div class="checks"><span>${a.castrado ? "✅" : "⬜"} Castrado/a</span><span>${a.vacunado ? "✅" : "⬜"} Vacunado/a</span></div>
+        ${a.estado === "En adopción"
+          ? `<button class="btn btn-amarillo" onclick="formAdopcion('${a.id}')">Quiero adoptar a ${esc(a.nombre)}</button>`
+          : `<p style="font-weight:700;color:var(--gris)">Ya tiene una adopción en curso. ¡Mirá a los demás!</p>`}
+      </div>
+    </div>`);
+}
+
+function formAdopcion(id) {
+  const a = animales.find(x => x.id === id);
+  abrirModal(`
+    <form class="form" id="fAdop">
+      <h2>Solicitud para adoptar a ${esc(a.nombre)}</h2>
+      <p class="sub">Completá con sinceridad: nos ayuda a encontrar el mejor hogar para cada animal.</p>
+      <div class="fila"><label>Nombre y apellido<input name="nombre" required autocomplete="name"></label><label>Teléfono / WhatsApp<input name="telefono" required inputmode="tel" autocomplete="tel"></label></div>
+      <div class="fila"><label>Email (opcional)<input name="email" type="email" autocomplete="email"></label><label>Localidad<input name="localidad" placeholder="Chuy, 18 de Julio, La Coronilla…"></label></div>
+      <label>¿Cómo es tu vivienda?<select name="vivienda"><option>Casa con patio cerrado</option><option>Casa sin patio cerrado</option><option>Apartamento</option><option>Otro</option></select></label>
+      <label>¿Tenés otros animales? ¿Cuáles?<input name="otros_animales" placeholder="Ej: una perra castrada de 5 años"></label>
+      <div class="pregunta">
+        <b>¿Comprás o vendés animales?</b>
+        <div class="radios"><label><input type="radio" name="compra_venta" value="no" required> No</label><label><input type="radio" name="compra_venta" value="si"> Sí</label></div>
+      </div>
+      <label>Contanos por qué querés adoptar<textarea name="mensaje" rows="3"></textarea></label>
+      <label class="opcion"><input type="checkbox" name="acepta_seguimiento" required> Acepto que la ONG haga seguimiento de la adopción y me comprometo a castrar, vacunar y cuidar al animal toda su vida.</label>
+      <div id="fMsg"></div>
+      <button class="btn btn-amarillo" type="submit">Enviar solicitud</button>
+    </form>`);
+  document.getElementById("fAdop").addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = e.target, d = Object.fromEntries(new FormData(f)), btn = f.querySelector("button[type=submit]");
+    btn.disabled = true; btn.textContent = "Enviando…";
+    const { error } = await sb.from("solicitudes_adopcion").insert({
+      animal_id: a.id, nombre: d.nombre.trim(), telefono: d.telefono.trim(), email: d.email || null,
+      localidad: d.localidad || null, vivienda: d.vivienda, otros_animales: d.otros_animales || null,
+      compra_venta: d.compra_venta === "si", acepta_seguimiento: !!d.acepta_seguimiento, mensaje: d.mensaje || null,
+    });
+    if (error) { document.getElementById("fMsg").innerHTML = `<div class="msg error">No se pudo enviar. Revisá tu conexión e intentá de nuevo.</div>`; btn.disabled = false; btn.textContent = "Enviar solicitud"; return; }
+    const wa = ORG.whatsapp ? `<a class="btn btn-azul" target="_blank" rel="noopener" href="https://wa.me/${ORG.whatsapp}?text=${encodeURIComponent(`Hola! Envié una solicitud para adoptar a ${a.nombre}. Soy ${d.nombre}.`)}">Avisar por WhatsApp</a>` : "";
+    f.innerHTML = `<h2>¡Gracias, ${esc(d.nombre.split(" ")[0])}! 💛</h2><p class="sub">Recibimos tu solicitud para adoptar a ${esc(a.nombre)}. Un voluntario se va a comunicar con vos al ${esc(d.telefono)}.</p>${wa}`;
+  });
+}
+
+function formOfrecer(tipo) {
+  abrirModal(`
+    <form class="form" id="fOf">
+      <h2>${esc(tipo)}</h2>
+      <p class="sub">Dejanos tus datos y te contactamos.</p>
+      <div class="fila"><label>Nombre<input name="nombre" required autocomplete="name"></label><label>Teléfono / WhatsApp<input name="telefono" required inputmode="tel" autocomplete="tel"></label></div>
+      <label>Mensaje (opcional)<textarea name="mensaje" rows="3" placeholder="Disponibilidad, qué podés aportar…"></textarea></label>
+      <div id="oMsg"></div>
+      <button class="btn btn-amarillo" type="submit">Enviar</button>
+    </form>`);
+  document.getElementById("fOf").addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = e.target, d = Object.fromEntries(new FormData(f)), btn = f.querySelector("button");
+    btn.disabled = true;
+    const { error } = await sb.from("ofrecimientos").insert({ tipo, nombre: d.nombre.trim(), telefono: d.telefono.trim(), mensaje: d.mensaje || null });
+    if (error) { document.getElementById("oMsg").innerHTML = `<div class="msg error">No se pudo enviar. Intentá de nuevo.</div>`; btn.disabled = false; return; }
+    f.innerHTML = `<h2>¡Gracias! 💛</h2><p class="sub">Te vamos a contactar pronto.</p>`;
+  });
+}
+document.querySelectorAll("[data-ofrecer]").forEach(b => b.addEventListener("click", () => formOfrecer(b.dataset.ofrecer)));
+
+cargar();
+</script>
+</body>
+</html>

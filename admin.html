@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es-UY">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de voluntarios · Pegaso</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body{background:#f1f3f8}
+  .barra{background:var(--azul);color:#fff}
+  .barra .contenedor{display:flex;justify-content:space-between;align-items:center;height:64px}
+  .barra b{font-family:"Fraunces",serif;font-size:1.2rem}
+  .panel{padding:2rem 0 4rem}
+  .tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+  .card{background:#fff;border-radius:16px;padding:1.4rem;box-shadow:var(--sombra)}
+  .login{max-width:420px;margin:4rem auto}
+  .login form{display:grid;gap:1rem}
+  .fila-a{display:grid;grid-template-columns:72px 1fr auto;gap:1rem;align-items:center;padding:.8rem 0;border-bottom:1px solid var(--linea)}
+  .fila-a:last-child{border:0}
+  .mini{width:72px;height:72px;border-radius:12px;background:var(--azul-claro) center/cover}
+  .fila-a select{width:auto;padding:.45rem .6rem}
+  .acc{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end}
+  .acc button{padding:.45rem .8rem;font-size:.85rem}
+  .sol{padding:1rem 0;border-bottom:1px solid var(--linea);display:grid;gap:.3rem}
+  .sol:last-child{border:0}
+  .alerta{background:#fde2e2;color:#8a1f1f;font-weight:800;padding:.2rem .6rem;border-radius:8px;font-size:.8rem}
+  .gris{color:var(--gris);font-size:.9rem}
+  .previews{display:flex;gap:.5rem;flex-wrap:wrap}
+  .previews img{width:70px;height:70px;object-fit:cover;border-radius:10px}
+  .oculto{display:none!important}
+  @media(max-width:560px){.fila-a{grid-template-columns:56px 1fr}.fila-a .acc{grid-column:1/-1;justify-content:flex-start}.mini{width:56px;height:56px}}
+</style>
+</head>
+<body>
+<div class="barra"><div class="contenedor"><b>🐾 Panel · <span data-org="nombreCorto">Pegaso</span></b><div><a href="index.html" style="color:#fff;margin-right:1rem">Ver sitio</a><button id="salir" class="btn btn-amarillo oculto" style="padding:.45rem .9rem">Salir</button></div></div></div>
+
+<div class="contenedor panel">
+  <!-- Login -->
+  <div class="card login" id="vLogin">
+    <h2 style="margin-bottom:.4rem">Ingreso de voluntarios</h2>
+    <p class="gris" style="margin-bottom:1rem">Usá el email y la contraseña que te dio la ONG.</p>
+    <form id="fLogin">
+      <label>Email<input name="email" type="email" required autocomplete="username"></label>
+      <label>Contraseña<input name="password" type="password" required autocomplete="current-password"></label>
+      <div id="lMsg"></div>
+      <button class="btn btn-azul" type="submit">Ingresar</button>
+    </form>
+  </div>
+
+  <!-- App -->
+  <div id="vApp" class="oculto">
+    <div class="tabs">
+      <button class="chip on" data-tab="animales">Animales</button>
+      <button class="chip" data-tab="solicitudes">Solicitudes <span id="nSol"></span></button>
+      <button class="chip" data-tab="ofrecimientos">Ayuda ofrecida</button>
+      <button class="btn btn-amarillo" id="btnNuevo" style="margin-left:auto">+ Cargar animal</button>
+    </div>
+    <div class="card" id="tAnimales"></div>
+    <div class="card oculto" id="tSolicitudes"></div>
+    <div class="card oculto" id="tOfrecimientos"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="caja"><button class="cerrar" onclick="cerrarModal()">×</button><div id="modalCuerpo"></div></div></div>
+
+<script>
+const sb = supabase.createClient(ORG.supabaseUrl, ORG.supabaseKey);
+document.querySelectorAll("[data-org]").forEach(el => { if (ORG[el.dataset.org]) el.textContent = ORG[el.dataset.org]; });
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const $ = id => document.getElementById(id);
+const ESTADOS = ["En adopción","Reservado","En tránsito","Adoptado"];
+let animales = [];
+
+function abrirModal(h){ $("modalCuerpo").innerHTML = h; $("modal").classList.add("abierto"); }
+function cerrarModal(){ $("modal").classList.remove("abierto"); }
+
+// ---------- Sesión ----------
+async function iniciar() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return mostrarLogin();
+  const { data: ok } = await sb.rpc("es_voluntario");
+  if (!ok) { await sb.auth.signOut(); return mostrarLogin("Tu usuario no está habilitado como voluntario. Pedile a la ONG que te habilite."); }
+  $("vLogin").classList.add("oculto"); $("vApp").classList.remove("oculto"); $("salir").classList.remove("oculto");
+  cargarAnimales(); cargarSolicitudes(); cargarOfrecimientos();
+}
+function mostrarLogin(msg) {
+  $("vLogin").classList.remove("oculto"); $("vApp").classList.add("oculto"); $("salir").classList.add("oculto");
+  $("lMsg").innerHTML = msg ? `<div class="msg error">${esc(msg)}</div>` : "";
+}
+$("fLogin").addEventListener("submit", async e => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(e.target));
+  const { error } = await sb.auth.signInWithPassword({ email: d.email, password: d.password });
+  if (error) return mostrarLogin("Email o contraseña incorrectos.");
+  iniciar();
+});
+$("salir").onclick = async () => { await sb.auth.signOut(); mostrarLogin(); };
+
+// ---------- Tabs ----------
+document.querySelector(".tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-tab]"); if (!b) return;
+  document.querySelectorAll("[data-tab]").forEach(x => x.classList.toggle("on", x === b));
+  ["animales","solicitudes","ofrecimientos"].forEach(t => $("t" + t[0].toUpperCase() + t.slice(1)).classList.toggle("oculto", t !== b.dataset.tab));
+});
+
+// ---------- Animales ----------
+async function cargarAnimales() {
+  const { data, error } = await sb.from("animales").select("*").order("creado_en", { ascending: false });
+  if (error) { $("tAnimales").innerHTML = `<div class="msg error">${esc(error.message)}</div>`; return; }
+  animales = data;
+  $("tAnimales").innerHTML = data.length ? data.map(a => `
+    <div class="fila-a">
+      <div class="mini" style="background-image:url('${esc((a.fotos||[])[0]||"")}')"></div>
+      <div><b>${esc(a.nombre)}</b> <span class="gris">· ${esc([a.especie,a.sexo,a.edad_aprox].filter(Boolean).join(" · "))}</span><br>
+        <select onchange="cambiarEstado('${a.id}', this.value)">${ESTADOS.map(s => `<option ${s===a.estado?"selected":""}>${s}</option>`).join("")}</select></div>
+      <div class="acc"><button class="btn btn-borde" onclick="formAnimal('${a.id}')">Editar</button><button class="btn btn-borde" style="color:var(--rojo)" onclick="borrarAnimal('${a.id}')">Borrar</button></div>
+    </div>`).join("") : `<p class="gris">Todavía no hay animales cargados.</p>`;
+}
+async function cambiarEstado(id, estado) {
+  const { error } = await sb.from("animales").update({ estado }).eq("id", id);
+  if (error) alertar(error.message);
+}
+function borrarAnimal(id) {
+  const a = animales.find(x => x.id === id);
+  abrirModal(`<div class="form"><h2>¿Borrar a ${esc(a.nombre)}?</h2><p class="sub">Esto no se puede deshacer. Si ya fue adoptado, mejor cambiá su estado a "Adoptado" para que aparezca en Finales felices.</p>
+    <div style="display:flex;gap:.6rem"><button class="btn btn-azul" onclick="cerrarModal()">Cancelar</button><button class="btn btn-borde" style="color:var(--rojo)" onclick="confirmarBorrar('${id}')">Sí, borrar</button></div></div>`);
+}
+async function confirmarBorrar(id) { const { error } = await sb.from("animales").delete().eq("id", id); cerrarModal(); if (error) return alertar(error.message); cargarAnimales(); }
+function alertar(m) { abrirModal(`<div class="form"><div class="msg error">${esc(m)}</div></div>`); }
+
+// Reduce y convierte a WebP antes de subir (ahorra espacio del plan gratis)
+function comprimir(file, max = 1200, q = .78) {
+  return new Promise((ok, mal) => {
+    const img = new Image(); img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => b ? ok(b) : mal(new Error("No se pudo procesar la imagen")), "image/webp", q);
+      URL.revokeObjectURL(img.src);
+    }; img.onerror = () => mal(new Error("Imagen no válida")); img.src = URL.createObjectURL(file);
+  });
+}
+
+function formAnimal(id) {
+  const a = animales.find(x => x.id === id) || { especie: "Perro", estado: "En adopción", fotos: [] };
+  const sel = (n, ops, v) => `<select name="${n}">${ops.map(o => `<option ${o===v?"selected":""}>${o}</option>`).join("")}</select>`;
+  abrirModal(`
+  <form class="form" id="fAnimal">
+    <h2>${id ? "Editar a " + esc(a.nombre) : "Cargar animal"}</h2>
+    <div class="fila"><label>Nombre<input name="nombre" required value="${esc(a.nombre||"")}"></label><label>Especie${sel("especie",["Perro","Gato","Otro"],a.especie)}</label></div>
+    <div class="fila"><label>Sexo${sel("sexo",["Hembra","Macho"],a.sexo)}</label><label>Edad aproximada<input name="edad_aprox" placeholder="2 meses, 3 años…" value="${esc(a.edad_aprox||"")}"></label></div>
+    <div class="fila"><label>Tamaño${sel("tamano",["Chico","Mediano","Grande"],a.tamano)}</label><label>Estado${sel("estado",ESTADOS,a.estado)}</label></div>
+    <label>Descripción<textarea name="descripcion" rows="3" placeholder="Carácter, cómo se lleva con otros animales, historia del rescate…">${esc(a.descripcion||"")}</textarea></label>
+    <div style="display:flex;gap:1.4rem;flex-wrap:wrap">
+      <label class="opcion"><input type="checkbox" name="castrado" ${a.castrado?"checked":""}> Castrado/a</label>
+      <label class="opcion"><input type="checkbox" name="vacunado" ${a.vacunado?"checked":""}> Vacunado/a</label>
+      <label class="opcion"><input type="checkbox" name="destacado" ${a.destacado?"checked":""}> Destacar en portada</label>
+    </div>
+    <label>Fotos (podés sacarlas con el celular)<input type="file" name="archivos" accept="image/*" multiple></label>
+    <div class="previews">${(a.fotos||[]).map(u => `<img src="${esc(u)}" alt="">`).join("")}</div>
+    <div id="aMsg"></div>
+    <button class="btn btn-amarillo" type="submit">Guardar</button>
+  </form>`);
+  $("fAnimal").addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = e.target, fd = new FormData(f), btn = f.querySelector("button[type=submit]");
+    btn.disabled = true; btn.textContent = "Guardando…";
+    try {
+      const fotos = [...(a.fotos || [])];
+      for (const file of fd.getAll("archivos").filter(x => x.size)) {
+        const blob = await comprimir(file);
+        const ruta = `animales/${Date.now()}-${Math.random().toString(36).slice(2,8)}.webp`;
+        const { error } = await sb.storage.from("fotos").upload(ruta, blob, { contentType: "image/webp" });
+        if (error) throw error;
+        fotos.push(sb.storage.from("fotos").getPublicUrl(ruta).data.publicUrl);
+      }
+      const fila = {
+        nombre: fd.get("nombre").trim(), especie: fd.get("especie"), sexo: fd.get("sexo"), edad_aprox: fd.get("edad_aprox") || null,
+        tamano: fd.get("tamano"), estado: fd.get("estado"), descripcion: fd.get("descripcion") || null,
+        castrado: fd.has("castrado"), vacunado: fd.has("vacunado"), destacado: fd.has("destacado"), fotos,
+      };
+      const { error } = id ? await sb.from("animales").update(fila).eq("id", id) : await sb.from("animales").insert(fila);
+      if (error) throw error;
+      cerrarModal(); cargarAnimales();
+    } catch (err) {
+      $("aMsg").innerHTML = `<div class="msg error">${esc(err.message)}</div>`; btn.disabled = false; btn.textContent = "Guardar";
+    }
+  });
+}
+$("btnNuevo").onclick = () => formAnimal(null);
+
+// ---------- Solicitudes ----------
+async function cargarSolicitudes() {
+  const { data, error } = await sb.from("solicitudes_adopcion").select("*, animales(nombre)").order("creado_en", { ascending: false });
+  if (error) { $("tSolicitudes").innerHTML = `<div class="msg error">${esc(error.message)}</div>`; return; }
+  const nuevas = data.filter(s => s.estado === "Nueva").length;
+  $("nSol").textContent = nuevas ? `(${nuevas})` : "";
+  $("tSolicitudes").innerHTML = data.length ? data.map(s => `
+    <div class="sol">
+      <div><b>${esc(s.nombre)}</b> quiere adoptar a <b>${esc(s.animales?.nombre || "—")}</b> ${s.compra_venta ? '<span class="alerta">Compra/vende animales</span>' : ""}</div>
+      <div class="gris">📞 <a href="https://wa.me/598${esc(s.telefono.replace(/\D/g,"").replace(/^0/,""))}" target="_blank" rel="noopener">${esc(s.telefono)}</a> · ${esc(s.localidad||"")} · ${esc(s.vivienda||"")} · ${new Date(s.creado_en).toLocaleDateString("es-UY")}</div>
+      ${s.otros_animales ? `<div class="gris">Otros animales: ${esc(s.otros_animales)}</div>` : ""}
+      ${s.mensaje ? `<div>“${esc(s.mensaje)}”</div>` : ""}
+      <div><select onchange="estadoSolicitud('${s.id}', this.value)">${["Nueva","En revisión","Aprobada","Rechazada"].map(x => `<option ${x===s.estado?"selected":""}>${x}</option>`).join("")}</select></div>
+    </div>`).join("") : `<p class="gris">Todavía no llegaron solicitudes.</p>`;
+}
+async function estadoSolicitud(id, estado) { const { error } = await sb.from("solicitudes_adopcion").update({ estado }).eq("id", id); if (error) alertar(error.message); else cargarSolicitudes(); }
+
+// ---------- Ofrecimientos ----------
+async function cargarOfrecimientos() {
+  const { data, error } = await sb.from("ofrecimientos").select("*").order("creado_en", { ascending: false });
+  if (error) { $("tOfrecimientos").innerHTML = `<div class="msg error">${esc(error.message)}</div>`; return; }
+  $("tOfrecimientos").innerHTML = data.length ? data.map(o => `
+    <div class="sol"><div><b>${esc(o.tipo)}</b> · ${esc(o.nombre)}</div>
+    <div class="gris">📞 ${esc(o.telefono)} · ${new Date(o.creado_en).toLocaleDateString("es-UY")}</div>${o.mensaje ? `<div>${esc(o.mensaje)}</div>` : ""}</div>`).join("") : `<p class="gris">Todavía no hay ofrecimientos.</p>`;
+}
+
+iniciar();
+</script>
+</body>
+</html>
