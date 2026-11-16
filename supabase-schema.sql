@@ -145,3 +145,26 @@ drop policy if exists "fotos: subir voluntarios" on storage.objects;
 create policy "fotos: subir voluntarios" on storage.objects for insert to authenticated with check (bucket_id = 'fotos' and public.es_voluntario());
 drop policy if exists "fotos: borrar voluntarios" on storage.objects;
 create policy "fotos: borrar voluntarios" on storage.objects for delete to authenticated using (bucket_id = 'fotos' and public.es_voluntario());
+
+-- ============================================================
+-- Parte 3: veterinarias (mapa, horarios y turno)
+-- horario: "Lu-Vi 09:00-12:00,15:00-19:00; Sá 09:00-13:00"  o  "24h"
+-- ============================================================
+create table if not exists public.veterinarias (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null,
+  direccion text,
+  telefono text,
+  lat double precision not null,
+  lng double precision not null,
+  horario text,
+  urgencias boolean default false,
+  de_turno_hasta timestamptz,
+  activa boolean default true,
+  creado_en timestamptz default now()
+);
+alter table public.veterinarias enable row level security;
+grant select on public.veterinarias to anon, authenticated;
+grant all on public.veterinarias to authenticated;
+create policy "veterinarias: lectura pública" on public.veterinarias for select to anon, authenticated using (activa or public.es_voluntario());
+create policy "veterinarias: gestión voluntarios" on public.veterinarias for all to authenticated using (public.es_voluntario()) with check (public.es_voluntario());
